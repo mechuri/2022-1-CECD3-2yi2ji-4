@@ -20,4 +20,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('kiosk.urls')),
     path('kiosk/', include('kiosk.urls')),
+    path('object/', include('objectRecog.urls')),
+    path('setting/', include('setting.urls')),
 ]
