@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'kiosk',
     'objectRecog',
     'setting',
+    'ocr',
 
 ]
 
