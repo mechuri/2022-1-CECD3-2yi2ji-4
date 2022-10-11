@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from ocr import views, urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -22,4 +23,5 @@ urlpatterns = [
     path('kiosk/', include('kiosk.urls')),
     path('object/', include('objectRecog.urls')),
     path('setting/', include('setting.urls')),
+    path('ocr/', include('ocr.urls')),
 ]
