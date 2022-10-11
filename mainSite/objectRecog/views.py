@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 import requests
+import json
 
 
 def objectIndex(request):
@@ -17,5 +18,6 @@ def kakaoApi(request):
     # 'Content-Type': 'multipart/form-data; boundary=<calculated when request is sent>'
   }
   response = requests.request("POST", url, headers=headers, files=files)
-  print(response.json())
+  json_object = json.loads(response.text)
+  print(json_object)
   return render(request, 'objectrecogMain.html')
