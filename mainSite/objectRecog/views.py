@@ -51,3 +51,4 @@ def sttMicApi(request):
 
   with open("microphone-results.wav", "wb") as f:
     f.write(audio.get_wav_data())
+  return render(request, 'objectrecogMain.html')
