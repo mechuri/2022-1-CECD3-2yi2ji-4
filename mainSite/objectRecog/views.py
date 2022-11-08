@@ -21,7 +21,7 @@ def kakaoApi(request):
   json_object = json.loads(response.text)['result']
   result = []
   for i in range(len(json_object)):
-    result.append({'id': i, 'x':json_object[i]['x'], 'y':json_object[i]['y']})
+    result.append({'id': i, 'position':(json_object[i]['x'], json_object[i]['y'], json_object[i]['x']+json_object[i]['w'], json_object[i]['y']+json_object[i]['h']*1.5)})
   return render(request, 'objectrecogMain.html', {"result": result})
 
 def sttFileApi(request):
