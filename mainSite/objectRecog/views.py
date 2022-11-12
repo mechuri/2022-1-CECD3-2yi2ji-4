@@ -18,9 +18,11 @@ def kakaoApi(request):
     # 'Content-Type': 'multipart/form-data; boundary=<calculated when request is sent>'
   }
   response = requests.request("POST", url, headers=headers, files=files)
-  json_object = json.loads(response.text)
-  print(json_object)
-  return render(request, 'objectrecogMain.html')
+  json_object = json.loads(response.text)['result']
+  result = []
+  for i in range(len(json_object)):
+    result.append({'id': i, 'position':(json_object[i]['x'], json_object[i]['y'], json_object[i]['x']+json_object[i]['w'], json_object[i]['y']+json_object[i]['h']*1.5)})
+  return render(request, 'objectrecogMain.html', {"result": result})
 
 def sttFileApi(request):
   AUDIO_FILE = "objectRecog/hello.wav"
@@ -51,3 +53,4 @@ def sttMicApi(request):
 
   with open("microphone-results.wav", "wb") as f:
     f.write(audio.get_wav_data())
+  return render(request, 'objectrecogMain.html')
