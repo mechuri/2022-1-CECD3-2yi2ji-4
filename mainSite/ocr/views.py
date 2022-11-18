@@ -10,60 +10,111 @@ from django.views.decorators import gzip
 from django.http import StreamingHttpResponse
 import cv2
 import threading
+import cv2, os, urllib.request
+import numpy as np
+from django.conf import settings
+
+face_detection_webcam = cv2.CascadeClassifier("C:/Users/100ji/PycharmProjects/2yi2ji/2022-1-CECD3-2yi2ji-4/mainSite/ocr/haarcascade_frontalface_default.xml")
 
 # Create your views here.
 
 def ocrIndex(request):
+    cap = cv2.VideoCapture(0)  # 0: default camera
+    # cap = cv2.VideoCapture("test.mp4") #동영상 파일에서 읽기
+
+    while cap.isOpened():
+        # 카메라 프레임 읽기
+        success, frame = cap.read()
+        if success:
+            # 프레임 출력
+            cv2.imshow('Camera Window', frame)
+
+            # ESC를 누르면 종료
+            key = cv2.waitKey(1) & 0xFF
+            if (key == 27):
+                break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
     return render(request, 'ocrMain.html')
 
+
+def webcam_feed(request):
+	return StreamingHttpResponse(gen(IPWebCam()),
+					content_type='multipart/x-mixed-replace; boundary=frame')
+
+class IPWebCam(object):
+    def __init__(self):
+        self.url = "http://172.30.1.95:8080/shot.jpg"
+
+    def __del__(self):
+        cv2.destroyAllWindows()
+
+    def get_frame(self):
+        imgResp = urllib.request.urlopen(self.url)
+        imgNp = np.array(bytearray(imgResp.read()), dtype=np.uint8)
+        img = cv2.imdecode(imgNp, -1)
+        # We are using Motion JPEG, but OpenCV defaults to capture raw images,
+        # so we must encode it into JPEG in order to correctly display the
+        # video stream
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces_detected = face_detection_webcam.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+        for (x, y, w, h) in faces_detected:
+            cv2.rectangle(img, pt1=(x, y), pt2=(x + w, y + h), color=(255, 0, 0), thickness=2)
+        resize = cv2.resize(img, (640, 480), interpolation=cv2.INTER_LINEAR)
+        frame_flip = cv2.flip(resize, 1)
+        ret, jpeg = cv2.imencode('.jpg', frame_flip)
+        return jpeg.tobytes()
+
 def decode_predictions(scores, geometry):
-	# grab the number of rows and columns from the scores volume, then
-	# initialize our set of bounding box rectangles and corresponding
-	# confidence scores
-	(numRows, numCols) = scores.shape[2:4]
-	rects = []
-	confidences = []
-	# loop over the number of rows
-	for y in range(0, numRows):
-		# extract the scores (probabilities), followed by the
-		# geometrical data used to derive potential bounding box
-		# coordinates that surround text
-		scoresData = scores[0, 0, y]
-		xData0 = geometry[0, 0, y]
-		xData1 = geometry[0, 1, y]
-		xData2 = geometry[0, 2, y]
-		xData3 = geometry[0, 3, y]
-		anglesData = geometry[0, 4, y]
-		# loop over the number of columns
-		for x in range(0, numCols):
-			# if our score does not have sufficient probability,
-			# ignore it
-			if scoresData[x] < 0.5:
-				continue
-			# compute the offset factor as our resulting feature
-			# maps will be 4x smaller than the input image
-			(offsetX, offsetY) = (x * 4.0, y * 4.0)
-			# extract the rotation angle for the prediction and
-			# then compute the sin and cosine
-			angle = anglesData[x]
-			cos = np.cos(angle)
-			sin = np.sin(angle)
-			# use the geometry volume to derive the width and height
-			# of the bounding box
-			h = xData0[x] + xData2[x]
-			w = xData1[x] + xData3[x]
-			# compute both the starting and ending (x, y)-coordinates
-			# for the text prediction bounding box
-			endX = int(offsetX + (cos * xData1[x]) + (sin * xData2[x]))
-			endY = int(offsetY - (sin * xData1[x]) + (cos * xData2[x]))
-			startX = int(endX - w)
-			startY = int(endY - h)
-			# add the bounding box coordinates and probability score
-			# to our respective lists
-			rects.append((startX, startY, endX, endY))
-			confidences.append(scoresData[x])
-	# return a tuple of the bounding boxes and associated confidences
-	return (rects, confidences)
+    # grab the number of rows and columns from the scores volume, then
+    # initialize our set of bounding box rectangles and corresponding
+    # confidence scores
+    (numRows, numCols) = scores.shape[2:4]
+    rects = []
+    confidences = []
+    # loop over the number of rows
+    for y in range(0, numRows):
+        # extract the scores (probabilities), followed by the
+        # geometrical data used to derive potential bounding box
+        # coordinates that surround text
+        scoresData = scores[0, 0, y]
+        xData0 = geometry[0, 0, y]
+        xData1 = geometry[0, 1, y]
+        xData2 = geometry[0, 2, y]
+        xData3 = geometry[0, 3, y]
+        anglesData = geometry[0, 4, y]
+        # loop over the number of columns
+        for x in range(0, numCols):
+            # if our score does not have sufficient probability,
+            # ignore it
+            if scoresData[x] < 0.5:
+                continue
+            # compute the offset factor as our resulting feature
+            # maps will be 4x smaller than the input image
+            (offsetX, offsetY) = (x * 4.0, y * 4.0)
+            # extract the rotation angle for the prediction and
+            # then compute the sin and cosine
+            angle = anglesData[x]
+            cos = np.cos(angle)
+            sin = np.sin(angle)
+            # use the geometry volume to derive the width and height
+            # of the bounding box
+            h = xData0[x] + xData2[x]
+            w = xData1[x] + xData3[x]
+            # compute both the starting and ending (x, y)-coordinates
+            # for the text prediction bounding box
+            endX = int(offsetX + (cos * xData1[x]) + (sin * xData2[x]))
+            endY = int(offsetY - (sin * xData1[x]) + (cos * xData2[x]))
+            startX = int(endX - w)
+            startY = int(endY - h)
+            # add the bounding box coordinates and probability score
+            # to our respective lists
+            rects.append((startX, startY, endX, endY))
+            confidences.append(scoresData[x])
+    # return a tuple of the bounding boxes and associated confidences
+    return (rects, confidences)
 
 
 class VideoCamera(object):
@@ -88,17 +139,18 @@ class VideoCamera(object):
 def gen(camera):
     while True:
         frame = camera.get_frame()
-        yield(b'--frame\r\n'
-              b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 
 def openocr(request):
     context = {}
     return render(request, "startocr.html", context)
 
+
 def startocr(request):
-    east='/Users/jiwon/Documents/투이투지/2022-1-CECD3-2yi2ji-4/mainSite/ocr/frozen_east_text_detection.pb'
-    
+    east = "C:/Users/100ji/PycharmProjects/2yi2ji/2022-1-CECD3-2yi2ji-4/mainSite/ocr/frozen_east_text_detection.pb"
+
     cam = VideoCamera()
 
     # construct the argument parser and parse the arguments
@@ -142,7 +194,6 @@ def startocr(request):
     # else:
     #     vs = cam.video
 
-
     # start the FPS throughput estimator
     fps = FPS().start()
     # loop over frames from the video stream
@@ -150,7 +201,7 @@ def startocr(request):
         # grab the current frame, then handle if we are using a
         # VideoStream or VideoCapture object
         frame = vs.read()
-        frame = frame[1] #if cv2.VideoCapture(0) else frame
+        frame = frame[1]  # if cv2.VideoCapture(0) else frame
         # check to see if we have reached the end of the stream
         if frame is None:
             break
@@ -168,7 +219,7 @@ def startocr(request):
         # construct a blob from the frame and then perform a forward pass
         # of the model to obtain the two output layer sets
         blob = cv2.dnn.blobFromImage(frame, 1.0, (newW, newH),
-            (123.68, 116.78, 103.94), swapRB=True, crop=False)
+                                     (123.68, 116.78, 103.94), swapRB=True, crop=False)
         net.setInput(blob)
         (scores, geometry) = net.forward(layerNames)
         # decode the predictions, then  apply non-maxima suppression to
@@ -207,7 +258,5 @@ def startocr(request):
         # cv2.destroyAllWindows()
     return StreamingHttpResponse(gen(cam), content_type="multipart/x-mixed-replace;boundary=frame")
 
-
-
 # east='frozen_east_text_detection.pb'
-#python file_name.py --east frozen_east_text_detection.pb
+# python file_name.py --east frozen_east_text_detection.pb
