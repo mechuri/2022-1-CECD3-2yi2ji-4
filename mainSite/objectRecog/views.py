@@ -12,7 +12,7 @@ import numpy as np
 from gtts import gTTS
 
 
-# pytesseract.pytesseract.tesseract_cdm = "objectRecog/tesseract.exe"
+pytesseract.pytesseract.tesseract_cdm = "objectRecog/tesseract.exe"
 
 
 def objectIndex(request):
@@ -20,38 +20,41 @@ def objectIndex(request):
 
 
 def kakaoApi(request):
-    # url = "https://1f000b02-5fac-4dcc-9c12-b6e09a06d288.api.kr-central-1.kakaoi.io/ai/vision/24a42b80c90a4df8934dbfada31faa4d"
 
-    imgname = '11.png'
-    imgfile = Image.open(f"objectRecog/{imgname}")
+    # kakao 음식 영역 구분 START
+    url = "https://1f000b02-5fac-4dcc-9c12-b6e09a06d288.api.kr-central-1.kakaoi.io/ai/vision/24a42b80c90a4df8934dbfada31faa4d"
+
+    imgname = 'image.png'
+    imgfile = Image.open(f"./mainSite/media/{imgname}")
 
     files = [
-        ('image', (f'{imgname}', open(f'objectRecog/{imgname}', 'rb'), 'image/png'))
+        ('image', (f'{imgname}', open(f'./mainSite/media/{imgname}', 'rb'), 'image/png'))
     ]
 
     headers = {
         'x-api-key': 'c5931d5912f0137ea003419c3ee4de6b',
         # 'Content-Type': 'multipart/form-data; boundary=<calculated when request is sent>'
     }
-    # response = requests.request("POST", url, headers=headers, files=files)
-    # json_object = json.loads(response.text)['result']
+    response = requests.request("POST", url, headers=headers, files=files)
+    json_object = json.loads(response.text)['result']
     result = []
 
-    # for i in range(len(json_object)):
-    #     result.append({'id': i,
-    #                    'left-x': json_object[i]['x'],
-    #                    'left-y': json_object[i]['y'],
-    #                    'right-x': json_object[i]['x'] + json_object[i]['w'],
-    #                    'right-y': json_object[i]['y'] + json_object[i]['h'] * 1.5}
-    #                   )
+    for i in range(len(json_object)):
+        result.append({'id': i,
+                       'left-x': json_object[i]['x'],
+                       'left-y': json_object[i]['y'],
+                       'right-x': json_object[i]['x'] + json_object[i]['w'],
+                       'right-y': json_object[i]['y'] + json_object[i]['h'] * 1.5,
+                       'title': '',
+                       'price': ''},
+                      )
+
+    print(result)
+    # kakao 음식 영역 구분 END
 
     # OCR Part START
-    json_data = '[{"id": 0, "left-x": 786, "left-y": 547, "right-x": 1004, "right-y": 871.0}, {"id": 1, "left-x": 57, "left-y": 198, "right-x": 286, "right-y": 538.5}, {"id": 2, "left-x": 422, "left-y": 199, "right-x": 645, "right-y": 536.5}, {"id": 3, "left-x": 64, "left-y": 903, "right-x": 290, "right-y": 1246.5}, {"id": 4, "left-x": 54, "left-y": 545, "right-x": 298, "right-y": 908.0}, {"id": 5, "left-x": 418, "left-y": 545, "right-x": 667, "right-y": 908.0}, {"id": 6, "left-x": 768, "left-y": 901, "right-x": 1008, "right-y": 1252.0}, {"id": 7, "left-x": 769, "left-y": 193, "right-x": 1010, "right-y": 547.0}, {"id": 8, "left-x": 380, "left-y": 879, "right-x": 713, "right-y": 1290.0}, {"id": 9, "left-x": 847, "left-y": 1035, "right-x": 955, "right-y": 1173.0}]'
-    json_ini = json.loads(json_data)
-    # json_ini = json.dumps(result)
-    print(json_ini)
 
-    for data in json_ini:
+    for data in result:
         leftX = data['left-x']
         leftY = data['left-y']
         rightX = data['right-x']
@@ -61,16 +64,22 @@ def kakaoApi(request):
         cropped_img = imgfile.crop((leftX, leftY, rightX, rightY))
 
         # crop 된 이미지를 tesseract ocr 처리
-        result = pytesseract.image_to_string(cropped_img, lang='kor')
+        result_ocr = pytesseract.image_to_string(cropped_img, lang='kor')
 
         # ocr 결과에서 공백 제거하고 한글과 숫자 구분
-        result1 = re.sub(r"[\s]", "", result)
-        title = re.sub(r"[^\uAC00-\uD7A3]", "", result1)
-        price = re.sub(r"[^0-9]", "", result1)
+        result_no_space = re.sub(r"[\s]", "", result_ocr)
+        final = result_no_space.rstrip('원')
+        title = re.sub(r"[^\uAC00-\uD7A3]", "", final)
+        price = re.sub(r"[^0-9]", "", final)
+
+        data['title'] = title
+        data['price'] = price
 
         print("title : " + title + ", price : " + price)
 
     # OCR Part END
+    print("-------------------------------------")
+    print(result)
 
     return render(request, 'objectrecogMain.html', {"result": result})
 
@@ -138,7 +147,7 @@ def ttsApi(request):
 
 
 def roi(request):
-    img = cv2.imread('objectRecog/11.png')
+    img = cv2.imread('objectRecog/image.png')
 
     (x, y), (w, h) = (54, 545), (244, 242)
 

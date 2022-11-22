@@ -26,6 +26,9 @@
         function uploadFile() {
             document.getElementById('Coauthform').submit();
         }
+        function kakao() {
+            document.getElementById('kakao').submit();
+        }
     </script>
 </head>
 <body>
@@ -35,8 +38,16 @@
     <input type="file" name="uploadfile" id="uploadfile" />
 </form>
 
+<form action="/tesseract/kakao" method="post" id="kakao" enctype="multipart/form-data">
+    {% csrf_token %}
+</form>
+
 <div style="margin:50px 0;">
     <button onclick="uploadFile();">READ</button>
+</div>
+
+<div style="margin:50px 0;">
+    <button onclick="kakao();">kakao</button>
 </div>
 
 <div style="margin:50px 0;">
@@ -56,6 +67,9 @@
             </td>
         </tr>
     </table>
+
+    <br><br>음식인식 결과 <br>
+    {{result}}
 </div>
 
 
