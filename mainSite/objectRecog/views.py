@@ -40,28 +40,15 @@ def kakaoApi(request):
     result = []
 
     for i in range(len(json_object)):
-        result.append({'id': i,
-                       'left-x': json_object[i]['x'],
-                       'left-y': json_object[i]['y'],
-                       'right-x': json_object[i]['x'] + json_object[i]['w'],
-                       'right-y': json_object[i]['y'] + json_object[i]['h'] * 1.5,
-                       'title': '',
-                       'price': ''},
-                      )
 
-    print(result)
-    # kakao 음식 영역 구분 END
-
-    # OCR Part START
-
-    for data in result:
-        leftX = data['left-x']
-        leftY = data['left-y']
-        rightX = data['right-x']
-        rightY = data['right-y']
+        leftX = json_object[i]['x']
+        leftY = json_object[i]['y']
+        rightX = json_object[i]['x'] + json_object[i]['w']
+        rightY = json_object[i]['y'] + json_object[i]['h'] * 2
 
         # 음식영역에 따른 이미지 crop
         cropped_img = imgfile.crop((leftX, leftY, rightX, rightY))
+        cropped_img.show()
 
         # crop 된 이미지를 tesseract ocr 처리
         result_ocr = pytesseract.image_to_string(cropped_img, lang='kor')
@@ -71,14 +58,17 @@ def kakaoApi(request):
         final = result_no_space.rstrip('원')
         title = re.sub(r"[^\uAC00-\uD7A3]", "", final)
         price = re.sub(r"[^0-9]", "", final)
-
-        data['title'] = title
-        data['price'] = price
-
         print("title : " + title + ", price : " + price)
 
-    # OCR Part END
-    print("-------------------------------------")
+        result.append({'id': i,
+                       'left-x': leftX,
+                       'left-y': leftY,
+                       'right-x': rightX,
+                       'right-y': rightY,
+                       'title': title,
+                       'price': price},
+                      )
+
     print(result)
 
     return render(request, 'objectrecogMain.html', {"result": result})

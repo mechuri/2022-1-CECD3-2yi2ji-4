@@ -2,14 +2,11 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="upgrade-insecure-requests"
-    />
     <title>Camera Web App</title>
     <!-- <link rel="stylesheet" href="{% static 'css/kiosk.css' %}" /> -->
     <style>
@@ -93,7 +90,7 @@
     </main>
 
     <script>
-      let constraints = { video: { facingMode: "environment" }, audio: false };
+      let constraints = { video: true, audio: false };
       const cameraView = document.querySelector("#camera--view");
       const cameraOutput = document.querySelector("#camera--output");
       const cameraSensor = document.querySelector("#camera--sensor");
