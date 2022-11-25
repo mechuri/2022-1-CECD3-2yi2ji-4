@@ -39,12 +39,18 @@ def kakaoApi(request):
     json_object = json.loads(response.text)['result']
     result = []
 
+    height = []
+    for i in range(len(json_object)):
+        height.append(json_object[i]['h'])
+    max_height = max(height)   
+
+
     for i in range(len(json_object)):
 
         leftX = json_object[i]['x']
         leftY = json_object[i]['y']
         rightX = json_object[i]['x'] + json_object[i]['w']
-        rightY = json_object[i]['y'] + json_object[i]['h'] * 2
+        rightY = json_object[i]['y'] + max_height * 2
 
         # 음식영역에 따른 이미지 crop
         cropped_img = imgfile.crop((leftX, leftY, rightX, rightY))
@@ -86,7 +92,7 @@ def sttFileApi(request):
         print("Google Speech Recognition could not understand audio")
     except sr.RequestError as e:
         print("Could not request results from Google Speech Recognition service; {0}".format(e))
-
+    return render(request, 'objectrecogMain.html')
 
 def sttMicApi(request):
     r = sr.Recognizer()
