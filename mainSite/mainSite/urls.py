@@ -25,7 +25,6 @@ urlpatterns = [
     path('kiosk/', include('kiosk.urls')),
     path('object/', include('objectRecog.urls')),
     path('setting/', include('setting.urls')),
-    path('ocr/', include('ocr.urls')),
     path('tesseract/', include('tesseractocr.urls')),
 ]
 
