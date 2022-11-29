@@ -21,9 +21,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('kiosk.urls')),
     path('kiosk/', include('kiosk.urls')),
-    path('object/', include('objectRecog.urls')),
+    path('', include('objectRecog.urls')),
     path('setting/', include('setting.urls')),
     path('tesseract/', include('tesseractocr.urls')),
 ]
