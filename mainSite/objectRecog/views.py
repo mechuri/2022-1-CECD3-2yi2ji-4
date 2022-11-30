@@ -44,7 +44,6 @@ def kakaoApi(request):
         height.append(json_object[i]['h'])
     max_height = max(height)   
 
-
     for i in range(len(json_object)):
 
         leftX = json_object[i]['x']
@@ -110,7 +109,7 @@ def sttMicApi(request):
 
     with open("microphone-results.wav", "wb") as f:
         f.write(audio.get_wav_data())
-    return render(request, 'objectrecogMain.html')
+    return render(request, 'objectrecogMain.html', {"result" : r.recognize_google(audio, language='ko')})
 
 
 def ttsApi(request):
@@ -139,7 +138,7 @@ def ttsApi(request):
     engine.setProperty('rate', 200)
     engine.say(title + price)
     engine.runAndWait()
-    return render(request, 'objectrecogMain.html')
+    return render(request, 'objectrecogMain.html', {"result": title + price})
 
 
 def roi(request):
