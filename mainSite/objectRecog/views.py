@@ -8,8 +8,7 @@ from PIL import Image
 from django.http import HttpResponse
 import pyttsx3
 import cv2
-import numpy as np
-from gtts import gTTS
+# from gtts import gTTS
 
 
 pytesseract.pytesseract.tesseract_cdm = "objectRecog/tesseract.exe"
@@ -137,6 +136,7 @@ def ttsApi(request):
     engine = pyttsx3.init()
     engine.setProperty('rate', 200)
     engine.say(title + price)
+    engine.save_to_file(title+price, 'static/tts.mp3')
     engine.runAndWait()
     return render(request, 'objectrecogMain.html', {"result": title + price})
 

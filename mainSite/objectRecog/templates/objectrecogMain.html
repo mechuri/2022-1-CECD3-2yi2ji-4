@@ -1,17 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Title</title>
-  </head>
-  <body>
-    <a href="{% url 'kiosk:index' %}">카메라</a>
-    <a href="{% url 'kakaoApi' %}">kakaoApi</a>
-    <a href="{% url 'sttFileApi' %}">sttFileApi</a>
-    <a href="{% url 'sttMicApi' %}">sttMicApi</a>
-    <a href="{% url 'ttsApi' %}">ttsApi</a>
-    <a href="{% url 'roi' %}">ROI</a>
-    <br />
-    {{result}}
-  </body>
-</html>
+{% extends 'base.html' %} {% load static %} {% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/kiosk.css' %}" />
+
+<a href="{% url 'kiosk:index' %}">카메라</a>
+<a href="{% url 'kakaoApi' %}">kakaoApi</a>
+<a href="{% url 'sttFileApi' %}">sttFileApi</a>
+<a href="{% url 'sttMicApi' %}">sttMicApi</a>
+<a href="{% url 'ttsApi' %}">ttsApi</a>
+<a href="{% url 'roi' %}">ROI</a>
+<br />
+{{result}}
+<audio controls>
+  <source src="{% static 'tts.mp3' %}" type="audio/mp3" />
+</audio>
+<img src="{% static 'images/image.png' %}" alt="My image" />
+
+{% endblock %}

@@ -16,13 +16,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 #from ocr import views, urls
+from .views import *
 from django.conf import settings 
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', main, name="main"),
     path('kiosk/', include('kiosk.urls')),
-    path('', include('objectRecog.urls')),
+    path('object/', include('objectRecog.urls')),
     path('setting/', include('setting.urls')),
     path('tesseract/', include('tesseractocr.urls')),
 ]
