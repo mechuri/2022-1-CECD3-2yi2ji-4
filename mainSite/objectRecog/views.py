@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render
 import requests
 import json
@@ -24,10 +25,10 @@ def kakaoApi(request):
     url = "https://1f000b02-5fac-4dcc-9c12-b6e09a06d288.api.kr-central-1.kakaoi.io/ai/vision/24a42b80c90a4df8934dbfada31faa4d"
 
     imgname = 'image.png'
-    imgfile = Image.open(f"./mainSite/media/{imgname}")
+    imgfile = Image.open(settings.MEDIA_ROOT+f'./{imgname}')
 
     files = [
-        ('image', (f'{imgname}', open(f'./mainSite/media/{imgname}', 'rb'), 'image/png'))
+        ('image', (f'{imgname}', open(settings.MEDIA_ROOT+f'./{imgname}', 'rb'), 'image/png'))
     ]
 
     headers = {
