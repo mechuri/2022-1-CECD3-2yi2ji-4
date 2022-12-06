@@ -12,7 +12,7 @@ def upload(request):
   data = request.POST.__getitem__('data')
   data = data[22:]
   path = str(settings.MEDIA_ROOT)
-  filename = 'image.png'
+  filename = 'image1.png'
   image = open(path+'/'+filename, "wb")
   image.write(base64.b64decode(data))
   image.close()
