@@ -9,4 +9,5 @@ urlpatterns = [
   path('sttMicApi/', views.sttMicApi, name="sttMicApi"),
   path('ttsApi/', views.ttsApi, name="ttsApi"),
   path('roi/', views.roi, name="roi"),
+  path('roiResult/', views.roiResult, name="roiResult"),
 ]

@@ -18,6 +18,9 @@ pytesseract.pytesseract.tesseract_cdm = "objectRecog/tesseract.exe"
 def objectIndex(request):
     return render(request, 'objectrecogMain.html')
 
+def roiResult(request):
+    return render(request, 'roiResult.html')
+
 
 def kakaoApi(request):
 
@@ -143,14 +146,15 @@ def ttsApi(request):
 
 
 def roi(request):
-    img = cv2.imread('objectRecog/image.png')
+    img = cv2.imread('objectRecog/images/testImage.png')
 
     (x, y), (w, h) = (54, 545), (244, 242)
 
     roi = img[y:y + h, x:x + w]
 
     cv2.rectangle(roi, (0, 0), (h - 1, w - 1), (0, 255, 0))
-    cv2.imshow("img", img)
+    # cv2.imshow("img", img)
+    cv2.imwrite('static/images/roiImg.png', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    return render(request, 'objectrecogMain.html')
+    return render(request, 'roiResult.html')
