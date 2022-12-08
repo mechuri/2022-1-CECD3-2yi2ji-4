@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.conf import settings
 from django.shortcuts import render
 import requests
@@ -6,10 +7,11 @@ import speech_recognition as sr
 import pytesseract
 import re
 from PIL import Image
-from django.http import HttpResponse
 import pyttsx3
 import cv2
-# from gtts import gTTS
+import base64
+import pyttsx3
+
 
 
 pytesseract.pytesseract.tesseract_cdm = "objectRecog/tesseract.exe"
@@ -18,8 +20,49 @@ pytesseract.pytesseract.tesseract_cdm = "objectRecog/tesseract.exe"
 def objectIndex(request):
     return render(request, 'objectrecogMain.html')
 
-def roiResult(request):
-    return render(request, 'roiResult.html')
+
+def barcode(request):
+    return render(request, 'barcode.html')
+
+
+def send(request):
+    if request.method == 'POST':
+        data = request.POST.get('result')
+        # result = json.loads(request.data)
+        # print("1")
+        # num = 123
+        # num = request.POST.get('result')
+
+
+        # b_code = '8801062012701'
+        b_code = data
+        url = 'http://openapi.foodsafetykorea.go.kr/api/ac73ac10d9fd494c90f2/C005/json/1/5/BAR_CD='+ b_code
+        response = requests.get(url)
+        contents = response.text
+        dic = json.loads(contents)
+
+        if (dic['C005']['total_count']=='0'):
+            engine = pyttsx3.init()
+            if (engine._inLoop):
+                engine.endLoop()
+            engine.say('입력하신 바코드의 정보를 찾을 수 없습니다.')
+            engine.runAndWait()
+            engine = None
+
+        else:
+            result = dic['C005']['row'][0]
+            BSSH_NM = result['BSSH_NM'].replace('주', '')
+            engine = pyttsx3.init()
+            if (engine._inLoop):
+                engine.endLoop()
+            engine.say('입력하신 바코드의' + ',' +
+            '제품 명은 '+result['PRDLST_NM'] + ',' +
+            '제품 종류는 '+ result['PRDLST_DCNM'] + ',' +
+            '제조사는 '+ BSSH_NM + ',' +
+            '입니다')
+            engine.runAndWait()
+            print(2)
+        return render(request, 'barcode.html')
 
 
 def kakaoApi(request):
@@ -146,15 +189,14 @@ def ttsApi(request):
 
 
 def roi(request):
-    img = cv2.imread('objectRecog/images/testImage.png')
+    img = cv2.imread('objectRecog/image.png')
 
     (x, y), (w, h) = (54, 545), (244, 242)
 
     roi = img[y:y + h, x:x + w]
 
     cv2.rectangle(roi, (0, 0), (h - 1, w - 1), (0, 255, 0))
-    # cv2.imshow("img", img)
-    cv2.imwrite('static/images/roiImg.png', img)
+    cv2.imshow("img", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    return render(request, 'roiResult.html')
+    return render(request, 'objectrecogMain.html')
